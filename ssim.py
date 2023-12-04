@@ -5,8 +5,9 @@ import pandas as pd
 import requests
 import base64
 from io import BytesIO
-# from skimage.metrics import structural_similarity as compare_ssim
-from skimage.metrics import structural_similarity
+from skimage.metrics import structural_similarity as ssim
+
+
 
 import sys
 print(sys.path)
@@ -19,7 +20,7 @@ def download_video(url, file_name):
         return file_name
 
 def calculate_ssim(frame1, frame2):
-    ssim = structural_similarity(frame1, frame2)
+    ssim = ssim(frame1, frame2)
     return ssim
 
 def calculate_ssim_for_each_frame(distorted_video_path, good_video_path):
