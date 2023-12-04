@@ -1,10 +1,22 @@
 import cv2
+import streamlit as st
 import numpy as np
-import matplotlib.pyplot as plt
 import pandas as pd
+import requests
+import base64
+from io import BytesIO
 from skimage.metrics import structural_similarity as compare_ssim
 
-# Rest of the code is the same
+def download_video(url, file_name):
+    response = requests.get(url)
+    if response.status_code == 200:
+        with open(file_name, 'wb') as f:
+            f.write(response.content)
+        return file_name
+
+def calculate_ssim(frame1, frame2):
+    ssim = compare_ssim(frame1, frame2)
+    return ssim
 
 def calculate_ssim_for_each_frame(distorted_video_path, good_video_path):
     # Open the videos
@@ -29,7 +41,7 @@ def calculate_ssim_for_each_frame(distorted_video_path, good_video_path):
         good_frame_gray = cv2.cvtColor(good_frame, cv2.COLOR_BGR2GRAY)
 
         # Calculate SSIM for the current frames
-        ssim = compare_ssim(distorted_frame_gray, good_frame_gray)
+        ssim = calculate_ssim(distorted_frame_gray, good_frame_gray)
 
         # Append the SSIM value to the list
         ssim_values.append(ssim)
@@ -48,36 +60,47 @@ def calculate_ssim_for_each_frame(distorted_video_path, good_video_path):
 
     return ssim_values, distorted_frame_numbers, frame_timestamps
 
-# Rest of the code remains the same
+# Streamlit app code
+st.title("SSIM Calculation Demo")
 
-# Example usage
-distorted_video_path = r"C:/OTT_PROJECT/SSIM and PSNR/output_video_distorted_middle.avi"
-good_video_path = r"C:/OTT_PROJECT/SSIM and PSNR/oxford_referance.mp4"
+# URLs for the distorted and reference videos
+distorted_video_url = "https://github.com/jyothishridhar/SSIM-Calculations/raw/main/distorted.avi"
+good_video_url = "https://github.com/jyothishridhar/SSIM-Calculations/raw/main/referance.mp4"
 
-# Calculate SSIM values for each frame in the distorted video
-ssim_values, distorted_frame_numbers, frame_timestamps = calculate_ssim_for_each_frame(distorted_video_path, good_video_path)
+# Download videos
+distorted_video_path = download_video(distorted_video_url, 'distorted.mp4')
+good_video_path = download_video(good_video_url, 'reference.mp4')
 
-# Create a list of frame numbers for x-axis
-frame_numbers = list(range(1, len(ssim_values) + 1))
+# Add download links
+st.markdown(f"**Download Distorted Video**")
+st.markdown(f"[Click here to download the Distorted Video]({distorted_video_url})")
 
-# Plot the SSIM values in a line graph
-plt.plot(frame_numbers, ssim_values, marker='o', linestyle='-')
-plt.xlabel('Frame Number')
-plt.ylabel('SSIM Value')
-plt.title('SSIM Values for Distorted Video')
-plt.grid(True)
-plt.show()
+st.markdown(f"**Download Reference Video**")
+st.markdown(f"[Click here to download the Reference Video]({good_video_url})")
 
-# Print SSIM values and frame timestamps for each frame
-data = {
-    'Frame Number': frame_numbers,
-    'SSIM Value': ssim_values,
-    'Timestamp (ms)': frame_timestamps
-}
+# Add button to run SSIM calculation
+if st.button("Run SSIM Calculation"):
+    # Calculate SSIM values for each frame in the distorted video
+    ssim_values, distorted_frame_numbers, frame_timestamps = calculate_ssim_for_each_frame(distorted_video_path, good_video_path)
 
-df = pd.DataFrame(data)
-print(df)
+    # Create a list of frame numbers for x-axis
+    frame_numbers = list(range(1, len(ssim_values) + 1))
 
-# Save SSIM values, frame numbers, and timestamps to an Excel file
-output_excel_path = r"C:\OTT_PROJECT\SSIM and PSNR\SSIM\ssim_values_and_timestamps.xlsx"
-df.to_excel(output_excel_path, index=False)
+    # Plot the SSIM values in a line chart using Streamlit
+    st.line_chart(pd.DataFrame({"Frame Number": frame_numbers, "SSIM Value": ssim_values}).set_index("Frame Number"))
+
+    # Display the result on the app
+    st.success("SSIM calculation completed!")
+
+    # Display the SSIM values and frame timestamps
+    data = {
+        'Frame Number': frame_numbers,
+        'SSIM Value': ssim_values,
+        'Timestamp (ms)': frame_timestamps
+    }
+
+    df = pd.DataFrame(data)
+    st.dataframe(df)
+
+    # Save SSIM values, frame numbers, and timestamps to an Excel file
+    st.markdown(get_excel_link(df, "Download SSIM Report"), unsafe_allow_html=True)
