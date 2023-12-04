@@ -1,5 +1,3 @@
-
-
 import cv2
 import streamlit as st
 import numpy as np
@@ -8,6 +6,8 @@ import requests
 import base64
 from io import BytesIO
 from skimage.metrics import structural_similarity as compare_ssim
+import sys
+print(sys.path)
 
 def download_video(url, file_name):
     response = requests.get(url)
