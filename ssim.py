@@ -9,8 +9,7 @@ from skimage.metrics import structural_similarity as ssim
 
 
 
-import sys
-print(sys.path)
+
 
 def download_video(url, file_name):
     response = requests.get(url)
