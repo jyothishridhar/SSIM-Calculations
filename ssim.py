@@ -6,6 +6,9 @@ import requests
 import base64
 from io import BytesIO
 from skimage.metrics import structural_similarity as ssim_metric 
+import subprocess
+
+subprocess.run(["pip", "install", "scikit-image==0.20.0"])
 
 def download_video(url, file_name):
     response = requests.get(url)
