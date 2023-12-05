@@ -18,7 +18,6 @@ def calculate_ssim(frame1, frame2):
     ssim_value = ssim_metric(frame1, frame2)  # Use 'ssim_metric' instead of 'ssim'
     return ssim_value
 
-
 def calculate_ssim_for_each_frame(distorted_video_path, good_video_path):
     # Open the videos
     distorted_video = cv2.VideoCapture(distorted_video_path)
