@@ -9,8 +9,6 @@ from skimage.metrics import structural_similarity as ssim
 
 
 
-
-
 def download_video(url, file_name):
     response = requests.get(url)
     if response.status_code == 200:
@@ -45,7 +43,7 @@ def calculate_ssim_for_each_frame(distorted_video_path, good_video_path):
         good_frame_gray = cv2.cvtColor(good_frame, cv2.COLOR_BGR2GRAY)
 
         # Calculate SSIM for the current frames
-        ssim = calculate_ssim(distorted_frame_gray, good_frame_gray)
+        ssim = ssim(distorted_frame_gray, good_frame_gray)
 
         # Append the SSIM value to the list
         ssim_values.append(ssim)
