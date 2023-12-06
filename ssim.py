@@ -87,7 +87,11 @@ if st.button("Run SSIM Calculation"):
 
     frame_numbers = list(range(1, len(ssim_values) + 1))
 
-    st.line_chart(pd.DataFrame({"Frame Number": frame_numbers, "SSIM Value": ssim_values, "Video Quality Status": video_quality_status}).set_index("Frame Number"))
+    # Plot the SSIM values
+    st.line_chart(pd.DataFrame({"Frame Number": frame_numbers, "SSIM Value": ssim_values}).set_index("Frame Number"))
+
+    # Plot the Video Quality Status
+    st.line_chart(pd.DataFrame({"Frame Number": frame_numbers, "Video Quality Status": video_quality_status}).set_index("Frame Number"))
 
     st.success("SSIM calculation completed!")
 
