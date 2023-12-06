@@ -4,6 +4,15 @@ import numpy as np
 import pandas as pd
 import requests
 from skimage.metrics import structural_similarity as ssim_metric 
+import base64
+from io import BytesIO
+
+def get_download_link(df, title):
+    csv = df.to_csv(index=False)
+    b64 = base64.b64encode(csv.encode()).decode()
+    href = f'<a href="data:text/csv;base64,{b64}" download="{title}.csv">Download {title}</a>'
+    return href
+
 
 def download_video(url, file_name):
     response = requests.get(url)
