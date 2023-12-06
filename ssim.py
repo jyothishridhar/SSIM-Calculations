@@ -61,8 +61,8 @@ def calculate_ssim_for_each_frame(distorted_video_path, good_video_path):
 
 st.title("SSIM Calculation Demo")
 
-distorted_video_url = "https://github.com/jyothishridhar/SSIM-Calculations/raw/main/distorted.avi"
-good_video_url = "https://github.com/jyothishridhar/SSIM-Calculations/raw/main/referance.mp4"
+distorted_video_url = "https://github.com/jyothishridhar/SSIM-Calculations/raw/master/distorted.avi"
+good_video_url = "https://github.com/jyothishridhar/SSIM-Calculations/raw/master/referance.mp4"
 
 distorted_video_path = download_video(distorted_video_url, 'distorted.mp4')
 good_video_path = download_video(good_video_url, 'reference.mp4')
