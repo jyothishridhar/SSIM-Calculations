@@ -30,6 +30,7 @@ def calculate_ssim_for_each_frame(distorted_video_path, good_video_path, ssim_th
     good_video = cv2.VideoCapture(good_video_path)
 
     ssim_values = []
+    video_quality_status = []  # 'Good' or 'Distorted' based on SSIM threshold
     distorted_frame_numbers = []
     frame_timestamps = []
 
@@ -47,8 +48,12 @@ def calculate_ssim_for_each_frame(distorted_video_path, good_video_path, ssim_th
 
         ssim_values.append(ssim)
 
+        # Determine Video Quality Status based on SSIM threshold
         if ssim < ssim_threshold:
+            video_quality_status.append('Distorted')
             distorted_frame_numbers.append(len(ssim_values))
+        else:
+            video_quality_status.append('Good')
 
         current_frame_time = distorted_video.get(cv2.CAP_PROP_POS_MSEC)
         frame_timestamps.append(current_frame_time)
@@ -56,7 +61,7 @@ def calculate_ssim_for_each_frame(distorted_video_path, good_video_path, ssim_th
     distorted_video.release()
     good_video.release()
 
-    return ssim_values, distorted_frame_numbers, frame_timestamps
+    return ssim_values, video_quality_status, distorted_frame_numbers, frame_timestamps
 
 st.title("SSIM Calculation Demo")
 
@@ -76,19 +81,20 @@ st.markdown(f"[Click here to download the Reference Video]({good_video_url})")
 ssim_threshold = st.slider("Select SSIM Threshold", min_value=0.0, max_value=1.0, value=0.6)
 
 if st.button("Run SSIM Calculation"):
-    ssim_values, distorted_frame_numbers, frame_timestamps = calculate_ssim_for_each_frame(
+    ssim_values, video_quality_status, distorted_frame_numbers, frame_timestamps = calculate_ssim_for_each_frame(
         distorted_video_path, good_video_path, ssim_threshold
     )
 
     frame_numbers = list(range(1, len(ssim_values) + 1))
 
-    st.line_chart(pd.DataFrame({"Frame Number": frame_numbers, "SSIM Value": ssim_values}).set_index("Frame Number"))
+    st.line_chart(pd.DataFrame({"Frame Number": frame_numbers, "SSIM Value": ssim_values, "Video Quality Status": video_quality_status}).set_index("Frame Number"))
 
     st.success("SSIM calculation completed!")
 
     data = {
         'Frame Number': frame_numbers,
         'SSIM Value': ssim_values,
+        'Video Quality Status': video_quality_status,
         'Timestamp (ms)': frame_timestamps
     }
 
