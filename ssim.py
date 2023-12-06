@@ -80,12 +80,13 @@ if st.button("Run SSIM Calculation"):
     }
 
     df = pd.DataFrame(data)
-    
+
+    # Display the dataframe using st.table
+    st.subheader("SSIM Report")
+    st.table(df)
+
     # Create a download button for the CSV file
     csv_button = st.download_button(label="Download SSIM Report", data=df.to_csv(index=False), file_name="ssim_report.csv", key="csv_button")
     
-    # Display the dataframe
-    st.dataframe(df)
-
     # Display the download button
     st.markdown(csv_button, unsafe_allow_html=True)
