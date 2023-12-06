@@ -73,6 +73,10 @@ st.markdown(f"[Click here to download the Distorted Video]({distorted_video_url}
 st.markdown(f"**Download Reference Video**")
 st.markdown(f"[Click here to download the Reference Video]({good_video_url})")
 
+# Add PSNR threshold slider
+ssim_threshold = st.slider("Select SSIM Threshold", min_value=0.0, max_value=1, value=0.9)
+
+
 if st.button("Run SSIM Calculation"):
     ssim_values, distorted_frame_numbers, frame_timestamps = calculate_ssim_for_each_frame(distorted_video_path, good_video_path)
 
