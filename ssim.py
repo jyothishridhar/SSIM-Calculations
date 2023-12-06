@@ -21,12 +21,14 @@ def calculate_ssim(frame1, frame2):
     ssim_value = ssim_metric(frame1, frame2)  # Use 'ssim_metric' instead of 'ssim'
     return ssim_value
 
+
 def get_excel_link(df, text):
     # Create a link to download the DataFrame as an Excel file
-    csv = df.to_csv(index=False)
+    csv = df.to_csv(index=False, encoding='utf-8')
     b64 = base64.b64encode(csv.encode()).decode()  # encode CSV file to bytes
     href = f'<a href="data:file/csv;base64,{b64}" download="ssim_report.csv">{text}</a>'
     return href
+
 
 def calculate_ssim_for_each_frame(distorted_video_path, good_video_path):
     # Open the videos
