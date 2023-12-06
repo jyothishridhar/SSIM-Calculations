@@ -44,7 +44,7 @@ def calculate_ssim_for_each_frame(distorted_video_path, good_video_path):
         good_frame_gray = cv2.cvtColor(good_frame, cv2.COLOR_BGR2GRAY)
 
         # Calculate SSIM for the current frames
-        ssim = ssim(distorted_frame_gray, good_frame_gray)
+        ssim = ssim_metric(distorted_frame_gray, good_frame_gray)
 
         # Append the SSIM value to the list
         ssim_values.append(ssim)
