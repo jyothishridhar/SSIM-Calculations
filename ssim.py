@@ -48,7 +48,7 @@ def calculate_ssim_for_each_frame(distorted_video_path, good_video_path):
 
         ssim_values.append(ssim)
 
-        if ssim < 0.75:
+        if ssim < 0.6:
             distorted_frame_numbers.append(len(ssim_values))
 
         current_frame_time = distorted_video.get(cv2.CAP_PROP_POS_MSEC)
