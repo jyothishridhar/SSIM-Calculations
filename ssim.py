@@ -3,7 +3,7 @@ import streamlit as st
 import numpy as np
 import pandas as pd
 import requests
-from skimage.metrics import structural_similarity as ssim_metric 
+from skimage.metrics import structural_similarity as ssim_metric
 import base64
 from io import BytesIO
 
@@ -12,7 +12,6 @@ def get_download_link(df, title):
     b64 = base64.b64encode(csv.encode()).decode()
     href = f'<a href="data:text/csv;base64,{b64}" download="{title}.csv">Download {title}</a>'
     return href
-
 
 def download_video(url, file_name):
     response = requests.get(url)
@@ -25,7 +24,7 @@ def calculate_ssim(frame1, frame2):
     ssim_value = ssim_metric(frame1, frame2)
     return ssim_value
 
-def calculate_ssim_for_each_frame(distorted_video_path, good_video_path):
+def calculate_ssim_for_each_frame(distorted_video_path, good_video_path, ssim_threshold):
     # Open the videos
     distorted_video = cv2.VideoCapture(distorted_video_path)
     good_video = cv2.VideoCapture(good_video_path)
@@ -48,7 +47,7 @@ def calculate_ssim_for_each_frame(distorted_video_path, good_video_path):
 
         ssim_values.append(ssim)
 
-        if ssim < 0.6:
+        if ssim < ssim_threshold:
             distorted_frame_numbers.append(len(ssim_values))
 
         current_frame_time = distorted_video.get(cv2.CAP_PROP_POS_MSEC)
@@ -73,9 +72,13 @@ st.markdown(f"[Click here to download the Distorted Video]({distorted_video_url}
 st.markdown(f"**Download Reference Video**")
 st.markdown(f"[Click here to download the Reference Video]({good_video_url})")
 
+# Add SSIM threshold slider
+ssim_threshold = st.slider("Select SSIM Threshold", min_value=0.0, max_value=1.0, value=0.6)
 
 if st.button("Run SSIM Calculation"):
-    ssim_values, distorted_frame_numbers, frame_timestamps = calculate_ssim_for_each_frame(distorted_video_path, good_video_path)
+    ssim_values, distorted_frame_numbers, frame_timestamps = calculate_ssim_for_each_frame(
+        distorted_video_path, good_video_path, ssim_threshold
+    )
 
     frame_numbers = list(range(1, len(ssim_values) + 1))
 
