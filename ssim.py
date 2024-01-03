@@ -71,7 +71,7 @@ st.title("SSIM Calculation Demo")
 distorted_video_url = "https://www.youtube.com/watch?v=UzYiAq2nAOU"
 good_video_url = "https://github.com/jyothishridhar/SSIM-Calculations/raw/master/referance.mp4"
 
-good_video_path = download_video(good_video_url, 'reference.mp4')
+good_video_path = download_youtube_video(good_video_url, 'reference.mp4')
 
 st.markdown(f"**YouTube Distorted Video URL:** {distorted_video_url}")
 
