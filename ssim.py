@@ -19,7 +19,8 @@ def download_youtube_video(url, file_name):
     stream.download(output_path=".", filename=file_name)
     return file_name
 
-def calculate_ssim_for_each_frame(distorted_video_path, ssim_threshold):
+def calculate_ssim_for_each_frame(distorted_video_url, ssim_threshold):
+    distorted_video_path = download_youtube_video(distorted_video_url, 'distorted.mp4')
     cap = cv2.VideoCapture(distorted_video_path)
 
     ssim_values = []
@@ -65,10 +66,8 @@ st.markdown(f"**YouTube Distorted Video URL:** {distorted_video_url}")
 ssim_threshold = st.slider("Select SSIM Threshold", min_value=0.0, max_value=1.0, value=0.6)
 
 if st.button("Run SSIM Calculation"):
-    distorted_video_path = download_youtube_video(distorted_video_url, 'distorted.mp4')
-    
     ssim_values, video_quality_status, distorted_frame_numbers, frame_timestamps = calculate_ssim_for_each_frame(
-        distorted_video_path, ssim_threshold
+        distorted_video_url, ssim_threshold
     )
 
     frame_numbers = list(range(1, len(ssim_values) + 1))
