@@ -4,7 +4,7 @@ pyinstaller==5.13.0
 opencv-python-headless==4.8.1.78
 streamlit==1.28.2
 scikit-image
-pytube==11.0.1
+pytube
 
 
 
