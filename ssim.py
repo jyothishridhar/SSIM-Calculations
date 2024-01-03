@@ -2,8 +2,8 @@ import cv2
 import streamlit as st
 import numpy as np
 import pandas as pd
-import requests
 from skimage.metrics import structural_similarity as ssim_metric
+from pytube import YouTube
 import base64
 from io import BytesIO
 
@@ -13,29 +13,32 @@ def get_download_link(df, title):
     href = f'<a href="data:text/csv;base64,{b64}" download="{title}.csv">Download {title}</a>'
     return href
 
-def download_video(url, file_name):
-    response = requests.get(url)
-    if response.status_code == 200:
-        with open(file_name, 'wb') as f:
-            f.write(response.content)
-        return file_name
+def download_youtube_video(url, file_name):
+    yt = YouTube(url)
+    stream = yt.streams.filter(file_extension='mp4', res='360p').first()
+    stream.download(file_name)
+    return file_name
 
 def calculate_ssim(frame1, frame2):
     ssim_value = ssim_metric(frame1, frame2)
     return ssim_value
 
-def calculate_ssim_for_each_frame(distorted_video_path, good_video_path, ssim_threshold):
+def calculate_ssim_for_each_frame(distorted_video_url, good_video_path, ssim_threshold):
     # Open the videos
-    distorted_video = cv2.VideoCapture(distorted_video_path)
     good_video = cv2.VideoCapture(good_video_path)
 
+    yt = YouTube(distorted_video_url)
+    stream = yt.streams.filter(file_extension='mp4', res='360p').first()
+    
     ssim_values = []
     video_quality_status = []  # 'Good' or 'Distorted' based on SSIM threshold
     distorted_frame_numbers = []
     frame_timestamps = []
 
+    cap = cv2.VideoCapture(stream.file_path)
+
     while True:
-        ret1, distorted_frame = distorted_video.read()
+        ret1, distorted_frame = cap.read()
         ret2, good_frame = good_video.read()
 
         if not ret1 or not ret2:
@@ -55,34 +58,31 @@ def calculate_ssim_for_each_frame(distorted_video_path, good_video_path, ssim_th
         else:
             video_quality_status.append('Good')
 
-        current_frame_time = distorted_video.get(cv2.CAP_PROP_POS_MSEC)
+        current_frame_time = cap.get(cv2.CAP_PROP_POS_MSEC)
         frame_timestamps.append(current_frame_time)
 
-    distorted_video.release()
+    cap.release()
     good_video.release()
 
     return ssim_values, video_quality_status, distorted_frame_numbers, frame_timestamps
 
 st.title("SSIM Calculation Demo")
 
-distorted_video_url = "https://github.com/jyothishridhar/SSIM-Calculations/raw/master/distorted.avi"
+distorted_video_url = "https://www.youtube.com/watch?v=UzYiAq2nAOU"
 good_video_url = "https://github.com/jyothishridhar/SSIM-Calculations/raw/master/referance.mp4"
 
-distorted_video_path = download_video(distorted_video_url, 'distorted.mp4')
 good_video_path = download_video(good_video_url, 'reference.mp4')
 
-st.markdown(f"**Download Distorted Video**")
-st.markdown(f"[Click here to download the Distorted Video]({distorted_video_url})")
-
-st.markdown(f"**Download Reference Video**")
-st.markdown(f"[Click here to download the Reference Video]({good_video_url})")
+st.markdown(f"**YouTube Distorted Video URL:** {distorted_video_url}")
 
 # Add SSIM threshold slider
 ssim_threshold = st.slider("Select SSIM Threshold", min_value=0.0, max_value=1.0, value=0.6)
 
 if st.button("Run SSIM Calculation"):
+    distorted_video_path = download_youtube_video(distorted_video_url, 'distorted.mp4')
+    
     ssim_values, video_quality_status, distorted_frame_numbers, frame_timestamps = calculate_ssim_for_each_frame(
-        distorted_video_path, good_video_path, ssim_threshold
+        distorted_video_url, good_video_path, ssim_threshold
     )
 
     frame_numbers = list(range(1, len(ssim_values) + 1))
