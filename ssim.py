@@ -4,6 +4,7 @@ import pandas as pd
 from skimage.metrics import structural_similarity as ssim_metric
 from pytube import YouTube
 import base64
+import imageio
 from io import BytesIO
 
 def get_download_link(df, title):
@@ -32,31 +33,27 @@ def calculate_ssim_for_each_frame(distorted_video_url, ssim_threshold):
     stream = yt.streams.filter(file_extension='mp4', res='360p').first()
 
     # Iterate over frames
-    for i, frame_bytes in enumerate(stream.iter_frames()):
-        # Convert frame bytes to numpy array
-        frame_array = np.frombuffer(frame_bytes, dtype=np.uint8)
-        # Decode the frame
-        distorted_frame = cv2.imdecode(frame_array, flags=cv2.IMREAD_COLOR)
-        
-        # Convert to grayscale
-        distorted_frame_gray = cv2.cvtColor(distorted_frame, cv2.COLOR_BGR2GRAY)
+    with imageio.get_reader(stream.url, 'ffmpeg') as video_reader:
+        for i, frame in enumerate(video_reader):
+            # Convert to grayscale
+            distorted_frame_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
-        # You may add more preprocessing steps if needed
+            # You may add more preprocessing steps if needed
 
-        # Compare with itself
-        ssim = ssim_metric(distorted_frame_gray, distorted_frame_gray)
+            # Compare with itself
+            ssim = ssim_metric(distorted_frame_gray, distorted_frame_gray)
 
-        ssim_values.append(ssim)
+            ssim_values.append(ssim)
 
-        # Determine Video Quality Status based on SSIM threshold
-        if ssim < ssim_threshold:
-            video_quality_status.append('Distorted')
-            distorted_frame_numbers.append(i + 1)
-        else:
-            video_quality_status.append('Good')
+            # Determine Video Quality Status based on SSIM threshold
+            if ssim < ssim_threshold:
+                video_quality_status.append('Distorted')
+                distorted_frame_numbers.append(i + 1)
+            else:
+                video_quality_status.append('Good')
 
-        current_frame_time = i * (1 / stream.fps) * 1000  # Convert frame number to timestamp in milliseconds
-        frame_timestamps.append(current_frame_time)
+            current_frame_time = i * (1 / video_reader.get_meta_data()['fps']) * 1000  # Convert frame number to timestamp in milliseconds
+            frame_timestamps.append(current_frame_time)
 
     return ssim_values, video_quality_status, distorted_frame_numbers, frame_timestamps
 
