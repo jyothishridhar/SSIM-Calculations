@@ -1,4 +1,3 @@
-import cv2
 import streamlit as st
 import numpy as np
 import pandas as pd
@@ -22,40 +21,42 @@ def download_youtube_video(url, file_name):
 def calculate_ssim_for_each_frame(distorted_video_url, ssim_threshold):
     yt = YouTube(distorted_video_url)
     stream = yt.streams.filter(file_extension='mp4', res='360p').first()
-    
+
     ssim_values = []
     video_quality_status = []  # 'Good' or 'Distorted' based on SSIM threshold
     distorted_frame_numbers = []
     frame_timestamps = []
 
-    # OpenCV can directly read from YouTube stream URLs
-    cap = cv2.VideoCapture(stream.url)
+    # Open the video using pytube
+    yt = YouTube(distorted_video_url)
+    stream = yt.streams.filter(file_extension='mp4', res='360p').first()
 
-    while True:
-        ret, distorted_frame = cap.read()
-
-        if not ret:
-            break
-
+    # Iterate over frames
+    for i, frame_bytes in enumerate(stream.iter_frames()):
+        # Convert frame bytes to numpy array
+        frame_array = np.frombuffer(frame_bytes, dtype=np.uint8)
+        # Decode the frame
+        distorted_frame = cv2.imdecode(frame_array, flags=cv2.IMREAD_COLOR)
+        
+        # Convert to grayscale
         distorted_frame_gray = cv2.cvtColor(distorted_frame, cv2.COLOR_BGR2GRAY)
 
         # You may add more preprocessing steps if needed
 
-        ssim = ssim_metric(distorted_frame_gray, distorted_frame_gray)  # Compare with itself
+        # Compare with itself
+        ssim = ssim_metric(distorted_frame_gray, distorted_frame_gray)
 
         ssim_values.append(ssim)
 
         # Determine Video Quality Status based on SSIM threshold
         if ssim < ssim_threshold:
             video_quality_status.append('Distorted')
-            distorted_frame_numbers.append(len(ssim_values))
+            distorted_frame_numbers.append(i + 1)
         else:
             video_quality_status.append('Good')
 
-        current_frame_time = cap.get(cv2.CAP_PROP_POS_MSEC)
+        current_frame_time = i * (1 / stream.fps) * 1000  # Convert frame number to timestamp in milliseconds
         frame_timestamps.append(current_frame_time)
-
-    cap.release()
 
     return ssim_values, video_quality_status, distorted_frame_numbers, frame_timestamps
 
@@ -70,7 +71,7 @@ ssim_threshold = st.slider("Select SSIM Threshold", min_value=0.0, max_value=1.0
 
 if st.button("Run SSIM Calculation"):
     distorted_video_path = download_youtube_video(distorted_video_url, 'distorted.mp4')
-    
+
     ssim_values, video_quality_status, distorted_frame_numbers, frame_timestamps = calculate_ssim_for_each_frame(
         distorted_video_url, ssim_threshold
     )
