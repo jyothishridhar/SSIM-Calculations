@@ -16,7 +16,7 @@ def get_download_link(df, title):
 def download_youtube_video(url, file_name):
     yt = YouTube(url)
     stream = yt.streams.filter(file_extension='mp4', res='360p').first()
-    stream.download(file_name)
+    stream.download()
     return file_name
 
 def calculate_ssim_for_each_frame(distorted_video_url, ssim_threshold):
@@ -28,7 +28,8 @@ def calculate_ssim_for_each_frame(distorted_video_url, ssim_threshold):
     distorted_frame_numbers = []
     frame_timestamps = []
 
-    cap = cv2.VideoCapture(stream.file_path)
+    # OpenCV can directly read from YouTube stream URLs
+    cap = cv2.VideoCapture(stream.url)
 
     while True:
         ret, distorted_frame = cap.read()
