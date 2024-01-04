@@ -5,7 +5,6 @@ from skimage.metrics import structural_similarity as ssim_metric
 from pytube import YouTube
 import base64
 import cv2
-import requests
 from io import BytesIO
 
 def get_download_link(df, title):
@@ -18,9 +17,9 @@ def download_youtube_video(url, file_name):
     yt = YouTube(url)
     stream = yt.streams.filter(file_extension='mp4', res='360p').first()
 
-    response = requests.get(stream.url)
+    video_bytes = stream.stream_to_buffer()
     with open(file_name, 'wb') as video_file:
-        video_file.write(response.content)
+        video_file.write(video_bytes)
 
     return file_name
 
@@ -28,14 +27,13 @@ def calculate_ssim_for_each_frame(distorted_video_url, ssim_threshold):
     distorted_video_path = download_youtube_video(distorted_video_url, 'distorted.mp4')
     cap = cv2.VideoCapture(distorted_video_path)
 
-    _, reference_frame = cap.read()
-    reference_frame_gray = cv2.cvtColor(reference_frame, cv2.COLOR_BGR2GRAY)
-    reference_frame_gray = cv2.resize(reference_frame_gray, (100, 100))  # Resize for consistency
-
     ssim_values = []
     video_quality_status = []  # 'Good' or 'Distorted' based on SSIM threshold
     distorted_frame_numbers = []
     frame_timestamps = []
+
+    _, reference_frame = cap.read()
+    reference_frame_gray = cv2.cvtColor(reference_frame, cv2.COLOR_BGR2GRAY)
 
     while True:
         ret, distorted_frame = cap.read()
@@ -44,7 +42,6 @@ def calculate_ssim_for_each_frame(distorted_video_url, ssim_threshold):
             break
 
         distorted_frame_gray = cv2.cvtColor(distorted_frame, cv2.COLOR_BGR2GRAY)
-        distorted_frame_gray = cv2.resize(distorted_frame_gray, (100, 100))  # Resize for consistency
 
         ssim = ssim_metric(reference_frame_gray, distorted_frame_gray)
 
