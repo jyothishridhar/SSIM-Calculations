@@ -5,6 +5,7 @@ from skimage.metrics import structural_similarity as ssim_metric
 from pytube import YouTube
 import base64
 import cv2
+import requests
 from io import BytesIO
 
 def get_download_link(df, title):
@@ -16,19 +17,15 @@ def get_download_link(df, title):
 def download_youtube_video(url, file_name):
     yt = YouTube(url)
     stream = yt.streams.filter(file_extension='mp4', res='360p').first()
-    stream.download(output_path=".", filename=file_name)
+
+    response = requests.get(stream.url)
+    with open(file_name, 'wb') as video_file:
+        video_file.write(response.content)
+
     return file_name
 
 def calculate_ssim_for_each_frame(distorted_video_url, ssim_threshold):
-    yt = YouTube(distorted_video_url)
-    stream = yt.streams.filter(file_extension='mp4', res='360p').first()
-
-    video_bytes = stream.stream_to_buffer()
-    video_np_array = np.frombuffer(video_bytes, dtype=np.uint8)
-    distorted_video_path = 'distorted.mp4'
-    with open(distorted_video_path, 'wb') as video_file:
-        video_file.write(video_np_array.tobytes())
-
+    distorted_video_path = download_youtube_video(distorted_video_url, 'distorted.mp4')
     cap = cv2.VideoCapture(distorted_video_path)
 
     ssim_values = []
