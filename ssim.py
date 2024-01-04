@@ -2,7 +2,7 @@ import streamlit as st
 import numpy as np
 import pandas as pd
 from skimage.metrics import structural_similarity as ssim_metric
-from pytube import YouTube
+import pafy
 import base64
 import cv2
 import requests
@@ -15,10 +15,10 @@ def get_download_link(df, title):
     return href
 
 def download_youtube_video(url, file_name):
-    yt = YouTube(url)
-    stream = yt.streams.filter(file_extension='mp4', res='360p').first()
+    video = pafy.new(url)
+    best = video.getbest(preftype="mp4")
     
-    response = requests.get(stream.url)
+    response = requests.get(best.url)
     with open(file_name, 'wb') as video_file:
         video_file.write(response.content)
 
