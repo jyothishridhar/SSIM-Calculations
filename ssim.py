@@ -8,6 +8,10 @@ import cv2
 import requests
 from io import BytesIO
 
+# Set the PAFY_BACKEND to "internal"
+import os
+os.environ["PAFY_BACKEND"] = "internal"
+
 def get_download_link(df, title):
     csv = df.to_csv(index=False)
     b64 = base64.b64encode(csv.encode()).decode()
