@@ -28,6 +28,10 @@ def calculate_ssim_for_each_frame(distorted_video_url, ssim_threshold):
     distorted_video_path = download_youtube_video(distorted_video_url, 'distorted.mp4')
     cap = cv2.VideoCapture(distorted_video_path)
 
+    _, reference_frame = cap.read()
+    reference_frame_gray = cv2.cvtColor(reference_frame, cv2.COLOR_BGR2GRAY)
+    reference_frame_gray = cv2.resize(reference_frame_gray, (100, 100))  # Resize for consistency
+
     ssim_values = []
     video_quality_status = []  # 'Good' or 'Distorted' based on SSIM threshold
     distorted_frame_numbers = []
@@ -40,10 +44,9 @@ def calculate_ssim_for_each_frame(distorted_video_url, ssim_threshold):
             break
 
         distorted_frame_gray = cv2.cvtColor(distorted_frame, cv2.COLOR_BGR2GRAY)
+        distorted_frame_gray = cv2.resize(distorted_frame_gray, (100, 100))  # Resize for consistency
 
-        # You may add more preprocessing steps if needed
-
-        ssim = ssim_metric(distorted_frame_gray, distorted_frame_gray)  # Compare with itself
+        ssim = ssim_metric(reference_frame_gray, distorted_frame_gray)
 
         ssim_values.append(ssim)
 
